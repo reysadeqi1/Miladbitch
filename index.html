@@ -6,16 +6,17 @@
 <title>Happy Birthday</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Vazirmatn:wght@700&display=swap" rel="stylesheet">
 <style>
 /* =========================================================
    UI
    عوض کردن پس‌زمینه: فقط --bg-image رو عوض کن
-   (bg-gingham.jpg یا bg-tiles.jpg)
+   (bg-tiles.jpg یا bg-gingham.jpg)
    ========================================================= */
 :root {
   --bg-color: #c9d8b0;
-  --bg-image: url("bg-gingham.jpg");
+  --bg-image: url("bg-tiles.jpg");
+  --deco: none;   /* گل و مارپیچ روی کاشی‌ها شلوغه. برای نشون دادنشون بنویس block */
   --cream: #fff7e6;
   --brown: #a8734c;
   --brown-dark: #7a4f30;
@@ -47,7 +48,7 @@ body {
 }
 
 /* تزئینات: سفیدی عکس‌ها با multiply حذف میشه */
-.deco { position: fixed; pointer-events: none; mix-blend-mode: multiply; user-select: none; z-index: 0; }
+.deco { display: var(--deco, block); position: fixed; pointer-events: none; mix-blend-mode: multiply; user-select: none; z-index: 0; }
 .deco.swirls { top: -2%; right: -4%; width: min(34vw, 200px); opacity: .85; }
 .deco.lily   { bottom: -3%; left: -4%; width: min(46vw, 270px); opacity: .9; }
 .stage { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 22px; width: 100%; }
@@ -64,10 +65,24 @@ body {
 
 /* متن: اول hint بعد final */
 #headline { max-width: min(92vw, 420px); font-size: clamp(12px, 3.6vw, 17px); line-height: 1.9; }
+#headline .hint { font-family: "Vazirmatn", Tahoma, sans-serif; font-weight: 700; font-size: clamp(17px, 5vw, 22px); line-height: 1.8; }
 #headline .final { display: none; color: #d9487f; }
 body.done #headline .hint { display: none; }
 body.done #headline .final { display: block; animation: pop .5s steps(4) both; }
 @keyframes pop { from { transform: scale(.6); } to { transform: scale(1); } }
+
+/* دعوت: بعد از متن تبریک، با تاخیر ظاهر میشه */
+#invite {
+  display: none;
+  max-width: min(92vw, 420px);
+  margin: 0;
+  font-family: "Vazirmatn", Tahoma, sans-serif;
+  font-weight: 700;
+  font-size: clamp(16px, 4.8vw, 20px);
+  line-height: 1.9;
+  color: var(--brown-dark);
+}
+body.done #invite { display: block; animation: pop .5s steps(4) 1.4s both; }
 
 /* کیک */
 #cake-wrap { position: relative; width: var(--cake-width); }
@@ -131,7 +146,7 @@ body.done .controls, body.done #meter { display: none; }
 .box.small { padding: 8px 10px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .flame, body.done #cake-wrap, body.done #headline .final { animation: none; }
+  .flame, body.done #cake-wrap, body.done #headline .final, body.done #invite { animation: none; }
 }
 </style>
 </head>
@@ -142,9 +157,11 @@ body.done .controls, body.done #meter { display: none; }
 
 <main class="stage">
   <h1 id="headline" class="box">
-    <span class="hint" id="hint"></span>
+    <span class="hint" id="hint" lang="fa" dir="rtl"></span>
     <span class="final" id="final"></span>
   </h1>
+
+  <p id="invite" class="box" lang="fa" dir="rtl"></p>
 
   <div id="cake-wrap">
     <img id="cake" src="cake.png" alt="a pixel birthday cake with three candles">
@@ -165,8 +182,9 @@ body.done .controls, body.done #meter { display: none; }
    مختصات به پیکسلِ خود عکس کیک (۵۰۰ در ۵۰۰) هستن.
    ========================================================= */
 const CONFIG = {
-  hint: 'blow out the candles',
+  hint: 'شمع‌ها رو فوت کن',
   finalText: 'happy birthday bitch',
+  invite: 'دوشنبه شب باید با من بیای بیرون کصکش',   // بعد از متن تبریک ظاهر میشه. خالی بذاری نمایش داده نمیشه
 
   cakeSize: 500,
   candles: [
@@ -195,6 +213,8 @@ const CONFIG = {
 
   $('hint').textContent = CONFIG.hint;
   $('final').textContent = CONFIG.finalText;
+  $('invite').textContent = CONFIG.invite;
+  if (!CONFIG.invite) $('invite').remove();
 
   function setStatus(text) { statusEl.textContent = text; statusEl.style.visibility = text ? 'visible' : 'hidden'; }
   setStatus('tap enable mic, then blow');
