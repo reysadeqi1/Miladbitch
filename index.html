@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Happy Birthday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   UI
+   عوض کردن پس‌زمینه: فقط --bg-image رو عوض کن
+   (bg-gingham.jpg یا bg-tiles.jpg)
+   ========================================================= */
+:root {
+  --bg-color: #c9d8b0;
+  --bg-image: url("bg-gingham.jpg");
+  --cream: #fff7e6;
+  --brown: #a8734c;
+  --brown-dark: #7a4f30;
+  --pink: #ffb3cf;
+  --lilac: #eeccff;
+  --flame: #ffd930;
+  --cake-width: min(78vw, 400px);
+  --pixel: "Press Start 2P", ui-monospace, "Courier New", monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg-color) var(--bg-image) center / cover fixed no-repeat;
+  color: var(--brown-dark);
+  font-family: var(--pixel);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 24px 16px 32px;
+  text-align: center;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* تزئینات: سفیدی عکس‌ها با multiply حذف میشه */
+.deco { position: fixed; pointer-events: none; mix-blend-mode: multiply; user-select: none; z-index: 0; }
+.deco.swirls { top: -2%; right: -4%; width: min(34vw, 200px); opacity: .85; }
+.deco.lily   { bottom: -3%; left: -4%; width: min(46vw, 270px); opacity: .9; }
+.stage { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 22px; width: 100%; }
+
+/* جعبه‌ی پیکسلی: لبه‌ی پله‌ای با box-shadow */
+.box {
+  background: var(--cream);
+  padding: 14px 16px;
+  box-shadow:
+    0 -4px 0 0 var(--brown), 0 4px 0 0 var(--brown),
+    -4px 0 0 0 var(--brown), 4px 0 0 0 var(--brown),
+    6px 8px 0 0 #00000026;
+}
+
+/* متن: اول hint بعد final */
+#headline { max-width: min(92vw, 420px); font-size: clamp(12px, 3.6vw, 17px); line-height: 1.9; }
+#headline .final { display: none; color: #d9487f; }
+body.done #headline .hint { display: none; }
+body.done #headline .final { display: block; animation: pop .5s steps(4) both; }
+@keyframes pop { from { transform: scale(.6); } to { transform: scale(1); } }
+
+/* کیک */
+#cake-wrap { position: relative; width: var(--cake-width); }
+#cake { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+body.done #cake-wrap { animation: hop 1.2s steps(6) 1; }
+@keyframes hop { 30% { transform: translateY(-4%); } 60% { transform: translateY(0); } 80% { transform: translateY(-1.5%); } }
+
+/* شعله: عکسش از خود کیک جدا شده. موقعیتش از CONFIG میاد */
+.flame {
+  position: absolute;
+  image-rendering: pixelated;
+  transform-origin: 50% 100%;
+  animation: flicker .5s steps(1) infinite;
+}
+.flame.out { display: none; }
+@keyframes flicker {
+  0%   { translate: 0 0; }
+  50%  { translate: 0 1.4%; }
+}
+
+/* دود */
+.smoke {
+  position: absolute;
+  width: 3%;
+  aspect-ratio: 1;
+  background: #e9e2d3;
+  box-shadow: 0 0 0 2px #cfc6b4;
+  opacity: 0;
+  animation: smoke 1.5s steps(8) forwards;
+}
+.smoke.s2 { animation-delay: .15s; width: 2.2%; margin-left: 3%; }
+.smoke.s3 { animation-delay: .3s;  width: 2.2%; margin-left: -3%; }
+@keyframes smoke {
+  0%   { opacity: .95; translate: 0 0; }
+  100% { opacity: 0;   translate: 0 -700%; }
+}
+
+/* دکمه‌ها و وضعیت */
+.controls { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+button {
+  font: inherit;
+  font-size: 11px;
+  color: var(--brown-dark);
+  background: var(--pink);
+  border: 0;
+  padding: 12px 14px;
+  cursor: pointer;
+  box-shadow:
+    0 -3px 0 0 var(--brown), 0 3px 0 0 var(--brown),
+    -3px 0 0 0 var(--brown), 3px 0 0 0 var(--brown),
+    3px 6px 0 0 var(--brown);
+  touch-action: manipulation;
+}
+button:active, button.on { transform: translate(3px, 6px); box-shadow: 0 -3px 0 0 var(--brown), 0 3px 0 0 var(--brown), -3px 0 0 0 var(--brown), 3px 0 0 0 var(--brown); }
+button:focus-visible { outline: 3px dashed var(--brown-dark); outline-offset: 6px; }
+body.done .controls, body.done #meter { display: none; }
+
+#meter { width: 180px; height: 10px; background: var(--cream); box-shadow: 0 0 0 3px var(--brown); }
+#meter i { display: block; height: 100%; width: 0; background: var(--flame); }
+#status { margin: 0; min-height: 1.6em; font-size: 9px; line-height: 1.8; }
+.box.small { padding: 8px 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .flame, body.done #cake-wrap, body.done #headline .final { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<img class="deco swirls" src="swirls.jpg" alt="">
+<img class="deco lily" src="lily.jpg" alt="">
+
+<main class="stage">
+  <h1 id="headline" class="box">
+    <span class="hint" id="hint"></span>
+    <span class="final" id="final"></span>
+  </h1>
+
+  <div id="cake-wrap">
+    <img id="cake" src="cake.png" alt="a pixel birthday cake with three candles">
+    <!-- شعله‌ها با JS اینجا ساخته میشن -->
+  </div>
+
+  <div class="controls">
+    <button id="start" type="button">enable mic</button>
+    <button id="hold" type="button">hold to blow</button>
+  </div>
+  <div id="meter" aria-hidden="true"><i></i></div>
+  <p id="status" class="box small" role="status"></p>
+</main>
+
+<script>
+/* =========================================================
+   CONFIG
+   مختصات به پیکسلِ خود عکس کیک (۵۰۰ در ۵۰۰) هستن.
+   ========================================================= */
+const CONFIG = {
+  hint: 'blow out the candles',
+  finalText: 'happy birthday bitch',
+
+  cakeSize: 500,
+  candles: [
+    // x, y, w, h = جای عکس شعله روی کیک | smokeX, smokeY = جای شروع دود
+    { img: 'flame-l.png', x: 123, y: 15, w: 36, h: 55, smokeX: 141, smokeY: 62 },
+    { img: 'flame-m.png', x: 232, y: 0,  w: 36, h: 54, smokeX: 250, smokeY: 46 },
+    { img: 'flame-r.png', x: 319, y: 15, w: 36, h: 55, smokeX: 337, smokeY: 62 }
+  ],
+
+  // تنظیم تشخیص فوت
+  sensitivity: 1,      // بیشتر = حساس‌تر
+  blowThreshold: 0.18, // حداقل شدت فوت (۰ تا ۱)
+  blowTime: 0.6        // تقریبا چند ثانیه فوت مداوم برای خاموش کردن یه شمع
+};
+
+/* =========================================================
+   منطق
+   ========================================================= */
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const wrap = $('cake-wrap');
+  const startBtn = $('start'), holdBtn = $('hold');
+  const meterFill = $('meter').firstElementChild, statusEl = $('status');
+  const S = CONFIG.cakeSize;
+  const pct = (v) => (v / S * 100) + '%';
+
+  $('hint').textContent = CONFIG.hint;
+  $('final').textContent = CONFIG.finalText;
+
+  function setStatus(text) { statusEl.textContent = text; statusEl.style.visibility = text ? 'visible' : 'hidden'; }
+  setStatus('tap enable mic, then blow');
+
+  // ساخت شعله‌ها
+  const candles = CONFIG.candles.map((c) => {
+    const el = document.createElement('img');
+    el.className = 'flame';
+    el.src = c.img;
+    el.alt = '';
+    el.style.left = pct(c.x);
+    el.style.top = pct(c.y);
+    el.style.width = pct(c.w);
+    wrap.appendChild(el);
+    return { ...c, el, dmg: 0, lit: true, resist: 0.8 + Math.random() * 0.4 };
+  });
+
+  function puffSmoke(c) {
+    ['s1', 's2', 's3'].forEach((k) => {
+      const s = document.createElement('div');
+      s.className = 'smoke ' + k;
+      s.style.left = pct(c.smokeX);
+      s.style.top = pct(c.smokeY);
+      s.addEventListener('animationend', () => s.remove());
+      wrap.appendChild(s);
+    });
+  }
+
+  /* ---------- میکروفون ---------- */
+  let audioCtx, analyser, tbuf, fbuf, stream, micOn = false;
+  let ambient = 0.01;
+
+  async function startMic() {
+    if (micOn) return true;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setStatus('no mic here. open on localhost or https, or use hold to blow');
+      return false;
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+      });
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.2;
+      audioCtx.createMediaStreamSource(stream).connect(analyser);
+      tbuf = new Float32Array(analyser.fftSize);
+      fbuf = new Float32Array(analyser.frequencyBinCount);
+      micOn = true;
+      return true;
+    } catch (e) {
+      setStatus('mic blocked. use hold to blow');
+      return false;
+    }
+  }
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+
+  // خروجی ۰ تا ۱: چقدر داره فوت میشه
+  function micBlowLevel() {
+    if (!micOn) return 0;
+
+    analyser.getFloatTimeDomainData(tbuf);
+    let sum = 0;
+    for (let i = 0; i < tbuf.length; i++) sum += tbuf[i] * tbuf[i];
+    const rms = Math.sqrt(sum / tbuf.length);
+
+    // فوت بیشتر انرژی‌ش زیر ~۱۲۰۰ هرتزه، صحبت کردن کمتر
+    analyser.getFloatFrequencyData(fbuf);
+    const binHz = audioCtx.sampleRate / analyser.fftSize;
+    const lowEnd = Math.floor(1200 / binHz);
+    const hiEnd = Math.min(fbuf.length, Math.floor(8000 / binHz));
+    let low = 0, total = 0;
+    for (let i = 1; i < hiEnd; i++) {
+      const p = Math.pow(10, Math.max(fbuf[i], -140) / 10);
+      total += p;
+      if (i < lowEnd) low += p;
+    }
+    const lowRatio = total > 0 ? low / total : 0;
+
+    if (rms < ambient * 1.6 + 0.004) ambient += (rms - ambient) * 0.02; // یاد گرفتن نویز محیط
+    const loud = clamp((rms - (ambient * 2.2 + 0.04)) / (0.2 / CONFIG.sensitivity), 0, 1);
+    return loud * smooth(0.35, 0.65, lowRatio);
+  }
+
+  /* ---------- دکمه‌ی نگه دار (جایگزین میکروفون) ---------- */
+  let holding = false;
+  const setHold = (v) => { holding = v; holdBtn.classList.toggle('on', v); };
+  holdBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); setHold(true); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) =>
+    holdBtn.addEventListener(ev, () => setHold(false)));
+  holdBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+  addEventListener('keydown', (e) => { if (e.code === 'Space' && e.target === document.body) { setHold(true); e.preventDefault(); } });
+  addEventListener('keyup', (e) => { if (e.code === 'Space') setHold(false); });
+
+  startBtn.addEventListener('click', async () => {
+    if (await startMic()) { startBtn.hidden = true; setStatus('mic is on. make a wish, then blow'); }
+  });
+
+  /* ---------- حلقه‌ی اصلی ---------- */
+  let last = performance.now(), blow = 0, finished = false;
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+
+    const target = Math.max(micBlowLevel(), holding ? 0.95 : 0);
+    blow += (target - blow) * Math.min(1, dt * (target > blow ? 18 : 7));
+    meterFill.style.width = Math.round(blow * 100) + '%';
+
+    if (!finished) {
+      for (const c of candles) {
+        if (!c.lit) continue;
+        if (blow > CONFIG.blowThreshold) c.dmg += ((blow - CONFIG.blowThreshold * 0.6) * dt) / (CONFIG.blowTime * c.resist);
+        else c.dmg = Math.max(0, c.dmg - dt * 0.8);
+
+        // موقع فوت، شعله کج و کوچیک میشه
+        const lean = blow > CONFIG.blowThreshold ? Math.round(blow * 3) * 4 : 0;
+        c.el.style.transform = `skewX(${lean}deg) scaleY(${1 - Math.round(c.dmg * 4) / 4 * 0.45})`;
+
+        if (c.dmg >= 1) {
+          c.lit = false;
+          c.el.classList.add('out');
+          puffSmoke(c);
+        }
+      }
+      const left = candles.filter((c) => c.lit).length;
+      if (left === 0) {
+        finished = true;
+        document.body.classList.add('done');
+        setStatus('');
+        if (stream) stream.getTracks().forEach((t) => t.stop());
+      } else if (left < candles.length) {
+        setStatus(left + (left === 1 ? ' candle left' : ' candles left'));
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
